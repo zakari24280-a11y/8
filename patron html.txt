@@ -1,0 +1,154 @@
+patron.html
+
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Patron Login</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      margin-top: 100px;
+    }
+
+```
+.box {
+  background: #1e293b;
+  padding: 30px;
+  width: 320px;
+  margin: auto;
+  border-radius: 12px;
+}
+
+input {
+  padding: 12px;
+  width: 85%;
+  border-radius: 6px;
+  border: none;
+  margin-top: 10px;
+  text-align: center;
+}
+
+button {
+  padding: 10px 15px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+}
+
+.big {
+  font-size: 42px;
+  margin: 20px 0;
+}
+
+.red {
+  background: #ef4444;
+}
+```
+
+  </style>
+</head>
+
+<body>
+
+<!-- LOGIN SCREEN -->
+
+<div class="box" id="loginBox">
+  <h2>Enter Session Code</h2>
+  <input id="codeInput" placeholder="ABC123">
+  <br>
+  <button onclick="login()">Start Session</button>
+</div>
+
+<!-- ACTIVE SESSION -->
+
+<div class="box" id="sessionBox" style="display:none;">
+  <h2>Session Active</h2>
+  <div class="big" id="timer">00:00</div>
+  <button class="red" onclick="logout()">Logout</button>
+</div>
+
+<!-- EXPIRED -->
+
+<div class="box" id="expiredBox" style="display:none;">
+  <h2>⛔ Session Ended</h2>
+  <button onclick="reset()">Enter New Code</button>
+</div>
+
+<script>
+let currentCode = null;
+
+// LOGIN
+function login() {
+  let code = document.getElementById("codeInput").value.toUpperCase();
+  let sessions = JSON.parse(localStorage.getItem("sessions")) || {};
+
+  if (sessions[code]) {
+    currentCode = code;
+    showSession();
+  } else {
+    alert("Invalid Code");
+  }
+}
+
+// SHOW UI STATES
+function showSession() {
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("sessionBox").style.display = "block";
+  document.getElementById("expiredBox").style.display = "none";
+}
+
+function showExpired() {
+  document.getElementById("sessionBox").style.display = "none";
+  document.getElementById("expiredBox").style.display = "block";
+}
+
+function reset() {
+  document.getElementById("loginBox").style.display = "block";
+  document.getElementById("expiredBox").style.display = "none";
+}
+
+// LOGOUT
+function logout() {
+  currentCode = null;
+  reset();
+}
+
+// FORMAT TIME
+function formatTime(s) {
+  let m = Math.floor(s / 60);
+  let sec = s % 60;
+  return m + ":" + (sec < 10 ? "0" : "") + sec;
+}
+
+// TIMER LOOP
+setInterval(() => {
+  if (!currentCode) return;
+
+  let sessions = JSON.parse(localStorage.getItem("sessions")) || {};
+
+  if (!sessions[currentCode]) {
+    showExpired();
+    return;
+  }
+
+  let timeLeft = sessions[currentCode].timeLeft;
+
+  if (timeLeft <= 0) {
+    showExpired();
+    return;
+  }
+
+  document.getElementById("timer").innerText = formatTime(timeLeft);
+
+}, 1000);
+</script>
+
+</body>
+</html>
